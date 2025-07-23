@@ -35,6 +35,10 @@
 
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
+<form action="{{ route('logout') }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-danger">Logout</button>
+</form>
 
             </ul>
         </nav>
@@ -81,6 +85,8 @@
 
                         <li class="nav-item">
                             <a href="{{ route('anggota.index') }}" class="nav-link">
+                                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>
                                     Kelola Anggota
@@ -89,6 +95,8 @@
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('kategori-buku') }}" class="nav-link">
+                                <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
                                <i class="nav-icon fas fa-list-alt"></i>
                                 <p>
                                     Kelola Kategori Buku
@@ -97,6 +105,8 @@
                         </li>
                         <li class="nav-item">
                            <a href="{{ route('bukus.index') }}" class="nav-link">
+                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
                                 <i class="nav-icon fas fa-book"></i>
                                 <p>
                                     Kelola Buku
@@ -114,7 +124,8 @@
                         </li>
                         <li class="nav-item">
                              <a href="{{ route('laporan.index') }}" class="nav-link">
-                             
+                             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
                                 <i class="nav-icon fas fa-book-open"></i>
                                 <p>
                                     Laporan Peminjaman

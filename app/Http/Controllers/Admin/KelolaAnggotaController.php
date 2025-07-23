@@ -13,27 +13,33 @@ class KelolaAnggotaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        try {
-            $data = Anggota::select([
-                'anggota.id',
-                'anggota.nama',
-                'anggota.nis',
-                'anggota.kelas',
-                'anggota.jns_kelamin',
-                'anggota.no_hp',
-                'anggota.foto',
-                'u.nama'
-            ])->join('users as u', 'anggota.user_id', '=', 'u.id')
-                ->where('u.peran', 'Anggota')
-                ->get();
+   public function index(Request $request)
+{
+    $query = Anggota::select([
+        'anggota.id',
+        'anggota.nama',
+        'anggota.nis',
+        'anggota.kelas',
+        'anggota.jns_kelamin',
+        'anggota.no_hp',
+        'anggota.foto',
+        'u.nama as nama_user'
+    ])->join('users as u', 'anggota.user_id', '=', 'u.id')
+      ->where('u.peran', 'Anggota');
 
-            return view('pages.admin.anggota.index', compact('data'));
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('anggota.nama', 'like', '%' . $search . '%')
+              ->orWhere('anggota.nis', 'like', '%' . $search . '%');
+        });
     }
+
+   $data = $query->paginate(5);
+
+    return view('pages.admin.anggota.index', compact('data'));
+}
+
 
     /**
      * Show the form for creating a new resource.

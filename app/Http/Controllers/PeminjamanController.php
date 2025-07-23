@@ -8,11 +8,51 @@ use Illuminate\Http\Request;
 
 class PeminjamanController extends Controller
 {
-    public function index()
-    {
-        $peminjaman = Peminjaman::with('buku')->get();
-        return view('peminjaman.index', compact('peminjaman'));
+  public function index(Request $request)
+{
+    // Update otomatis status jika sudah lewat tanggal kembali
+    $peminjamanList = Peminjaman::where('status', 'dipinjam')->get();
+
+    foreach ($peminjamanList as $peminjaman) {
+        $today = now()->toDateString();
+        $tanggalKembali = \Carbon\Carbon::parse($peminjaman->tanggal_kembali)->toDateString();
+
+        if ($today >= $tanggalKembali) {
+            $dendaPerHari = 1000;
+            $selisihHari = \Carbon\Carbon::parse($tanggalKembali)->diffInDays($today, false);
+            $denda = $selisihHari > 0 ? $selisihHari * $dendaPerHari : 0;
+
+            $peminjaman->update([
+                'status' => 'dikembalikan',
+                'tanggal_pengembalian' => $today,
+                'denda' => $denda,
+            ]);
+            
+        }
+         
     }
+    
+    
+
+    // Query pencarian
+    $query = Peminjaman::with(['user', 'buku']);
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+
+        $query->whereHas('user', function ($q) use ($search) {
+            $q->where('nama', 'like', '%' . $search . '%');
+        })->orWhereHas('buku', function ($q) use ($search) {
+            $q->where('judul', 'like', '%' . $search . '%');
+        });
+    }
+    $data= $query->paginate(5);
+
+    
+
+    return view('peminjaman.index', compact('data'));
+}
+
 
   public function create()
 {
@@ -60,4 +100,28 @@ class PeminjamanController extends Controller
         $peminjaman->delete();
         return redirect()->route('peminjaman.index')->with('success', 'Data berhasil dihapus.');
     }
+     public function kembalikan($id)
+{
+    $peminjaman = Peminjaman::findOrFail($id);
+
+    if ($peminjaman->status !== 'dikembalikan') {
+        $tanggalkembali = now();
+        $peminjaman->tanggal_pengembalian = $tanggalkembali;
+        $peminjaman->status = 'dikembalikan';
+
+        // Hitung denda jika lewat tanggal wajib kembali
+        $telat = $tanggalkembali->diffInDays($peminjaman->tanggal_kembali, false); // negatif kalau lewat
+        $dendaPerHari = 1000; // Ubah sesuai kebijakan
+
+        $peminjaman->denda = $telat > 0 ? 0 : abs($telat) * $dendaPerHari;
+
+        $peminjaman->save();
+
+        return redirect()->back()->with('success', 'Buku berhasil dikembalikan');
+
+    }
+
+    return redirect()->route('peminjaman.index')->with('warning', 'Peminjaman sudah dikembalikan sebelumnya.');
+}
+
 }

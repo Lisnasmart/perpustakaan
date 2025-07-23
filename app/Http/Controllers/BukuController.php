@@ -6,11 +6,20 @@ use App\Models\Buku;
 
 class BukuController extends Controller
 {
-   public function index()
+   public function index(Request $request)
 {
-    $bukus = Buku::all(); // Pastikan model "Buku" sesuai
+    $query = Buku::query();
+
+    if ($request->filled('search')) {
+        $query->where('judul', 'like', '%' . $request->search . '%');
+    }
+
+     $bukus= $query->paginate(5);
+
+
     return view('bukus.index', compact('bukus'));
 }
+
 
 
     public function create()

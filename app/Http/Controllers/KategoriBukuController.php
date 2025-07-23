@@ -7,11 +7,21 @@ use App\Models\KategoriBuku;
 
 class KategoriBukuController extends Controller
 {
-    public function index()
-    {
-        $kategori = KategoriBuku::all();
-        return view('kategori.index', compact('kategori'));
+   
+    public function index(Request $request)
+{
+    $query = KategoriBuku::query();
+
+    if ($request->filled('search')) {
+        $query->where('nama_kategori', 'like', '%' . $request->search . '%');
     }
+
+     $kategori= $query->paginate(5);
+
+
+    return view('kategori.index', compact('kategori'));
+}
+
 
     public function create()
     {
